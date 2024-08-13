@@ -1,0 +1,58 @@
+<?php
+// Function to get the IP address of the user
+function getUserIP() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        // IP from shared Internet
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // IP passed from proxy
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+        // IP address from remote address
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+    return $ip;
+}
+
+// Function to get ISP information from an IP address
+function getISPInfo($ip) {
+    // Use a free API or service to get ISP information
+    $api_url = "http://ip-api.com/json/{$ip}";
+    $response = file_get_contents($api_url);
+    $data = json_decode($response, true);
+    
+    // Check if API call was successful
+    if (isset($data['isp'])) {
+        return $data['isp'];
+    } else {
+        return "ISP information not found.";
+    }
+}
+
+// If form is submitted, get IP and ISP info
+$ip = '';
+$isp = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $ip = getUserIP();
+    $isp = getISPInfo($ip);
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP and ISP Lookup</title>
+</head>
+<body>
+    <h1>IP Address and ISP Lookup</h1>
+    <form action="" method="post">
+        <input type="submit" value="Get IP Address and ISP Info">
+    </form>
+    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+        <p><strong>IP Address:</strong> <?php echo htmlspecialchars($ip); ?></p>
+        <p><strong>ISP:</strong> <?php echo htmlspecialchars($isp); ?></p>
+    <?php endif; ?>
+</body>
+</html>
